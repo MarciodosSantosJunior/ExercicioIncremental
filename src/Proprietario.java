@@ -70,6 +70,10 @@ public class Proprietario {
         this.endereco.setEstado(estado);
     }
 
+    public ArrayList<Imovel> getImoveisParaLocacao() {
+        return imoveisParaLocacao;
+    }
+
     public String getCidade() {
         return this.endereco.getCidade();
     }
@@ -101,5 +105,35 @@ public class Proprietario {
 
     public void setNumero(String numero) {
         this.endereco.setNumero(numero);
+    }
+
+    public void adicionarDataAlugadaImovel(String numeroIPTU, String data) {
+        for(Imovel imovel: this.imoveisParaLocacao) {
+            if(imovel.getNumeroIPTU().equals(numeroIPTU)) {
+                imovel.adicionarDataAlugadaAgenda(data);
+                return;
+            }
+        }
+        System.out.println("Imovel não encontrado");
+    }
+
+    public void adicionarDataBloqueadaImovel(String numeroIPTU, String data) {
+        for(Imovel imovel: this.imoveisParaLocacao) {
+            if(imovel.getNumeroIPTU().equals(numeroIPTU)) {
+                imovel.adicionarDataBloqueadaAgenda(data);
+                return;
+            }
+        }
+        System.out.println("Imovel não encontrado");
+    }
+
+    public void adicionarDataDisponivelImovel(String numeroIPTU, String data) {
+        for(Imovel imovel: this.imoveisParaLocacao) {
+            if(imovel.getNumeroIPTU().equals(numeroIPTU)) {
+                imovel.adicionarDataDisponivelAgenda(data);
+                return;
+            }
+        }
+        System.out.println("Imovel não encontrado");
     }
 }
