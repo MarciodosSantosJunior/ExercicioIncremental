@@ -1,4 +1,9 @@
-public class UnidadeAutonoma extends Imovel {
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+
+public class UnidadeAutonoma extends Imovel{
     private double areaUtil;
     private double areaConstruida;
 
@@ -12,9 +17,7 @@ public class UnidadeAutonoma extends Imovel {
 
     public UnidadeAutonoma(String numeroIPTU, String rua, String cep, String tipo,
                            String utilizacao, String numero, double areaUtil, double areaConstruida, double valorIPTU) {
-        super(numeroIPTU, rua, cep, tipo, utilizacao, numero, valorIPTU);
-        this.areaUtil = areaUtil;
-        this.areaConstruida = areaConstruida;
+        this(numeroIPTU, "BA", "Salvador", rua, cep, tipo, utilizacao, numero, areaUtil, areaConstruida,  valorIPTU);
     }
 
     public double getAreaUtil() {
@@ -31,6 +34,13 @@ public class UnidadeAutonoma extends Imovel {
 
     public void setAreaConstruida(double areaConstruida) {
         this.areaConstruida = areaConstruida;
+    }
+
+    private static Calendar stringParaCalendar(String dataString) throws Exception {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(dateFormat.parse(dataString));
+        return calendar;
     }
 
     @Override

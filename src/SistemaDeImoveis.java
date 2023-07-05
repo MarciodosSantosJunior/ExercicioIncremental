@@ -3,79 +3,103 @@ import java.util.ArrayList;
 
 public class SistemaDeImoveis {
     private ArrayList<Proprietario> proprietarios;
+    private ArrayList<Imovel> imoveis;
 
     public SistemaDeImoveis() {
         this.proprietarios = new ArrayList<>();
+        this.imoveis = new ArrayList<>();
     };
 
-    public void cadastrarProprietario(String cpf, String identidade, String nome, String estado,
-                                 String cidade, String rua, String cep, String numero) {
+    public void cadastrarProprietario(String cpf, String identidade, String nome, String estado, String cidade, String rua, String cep, String numero) throws UsuarioExistenteException {
+        for (Proprietario proprietario : this.proprietarios) {
+            if (proprietario.getCpf().equals(cpf)) {
+                throw new UsuarioExistenteException("Proprietário já existe");
+            }
+        }
+
         proprietarios.add(new Proprietario(cpf, identidade, nome, estado, cidade, rua, cep, numero));
     }
 
-    public void cadastrarImovel(String cpfProprietario, Imovel imovel) {
+    public void cadastrarImovel(String cpfProprietario, Imovel imovel) throws NaoExistemException, NaoCadastradoException{
 
         if (this.proprietarios.isEmpty()) {
-            System.out.println("Não existem proprietários.");
-            return;
+            throw new NaoExistemException("Não existem proprietários cadastrados");
         }
 
         for (Proprietario proprietario : this.proprietarios) {
             if(proprietario.getCpf().equals(cpfProprietario)) {
                 proprietario.adicionaImovel(imovel);
-                System.out.println("\nImovel cadastrado.");
+                this.imoveis.add(imovel);
                 return;
             }
         }
-        System.out.println("Proprietário não encontrado.");
+        throw new NaoCadastradoException("Proprietário não cadastrado.");
     }
 
-    public void bloquearImovel(String cpf, String numeroIPTU, String data) {
-        if (this.proprietarios.isEmpty()) {
-            System.out.println("Não existem proprietários cadastrados para o Imóvel");
-            return;
+    public void cadastrarImovel(Imovel imovel) {
+        this.imoveis.add(imovel);
+    }
+
+    public void bloquearImovel( String numeroIPTU, String data) throws  NaoExistemException, NaoCadastradoException {
+        if (this.imoveis.isEmpty()) {
+            throw new NaoExistemException("Não existem imóveis cadastrados");
         }
 
-        for (Proprietario proprietario : this.proprietarios) {
-            if (proprietario.getCpf().equals(cpf)) {
-                proprietario.adicionarDataBloqueadaImovel(numeroIPTU, data);
-                System.out.println("DATA: " + data + " do Imovel com IPTU " + numeroIPTU + " foi bloqueada" );
-                return;
+        for (Imovel imovel : this.imoveis) {
+            if (imovel.getNumeroIPTU().equals(numeroIPTU)) {
+               imovel.adicionarDataBloqueadaAgenda(data);
+               return;
             }
         }
-        System.out.println("Erro ao bloquear Imovel.");
+        throw new NaoCadastradoException("Imóvel não cadastrado");
     }
 
-    public double valorDeReferencia(String cpf, String numeroIPTU) {
-        if (this.proprietarios.isEmpty()) {
-            System.out.println("Não existem proprietários cadastrados para o Imóvel");
-            return -1;
+    public boolean verificarDisponibilidade(String numeroIPTU, String datainicio, String datafim) throws Exception {
+        Imovel imovel = this.obtemImovel(numeroIPTU);
+        return imovel.consultarDisponibilidade(datainicio, datafim);
+    }
+
+    public double consultarAluguel(String numeroIPTU, String datainicio, String datafim) throws Exception {
+        Imovel imovel = this.obtemImovel(numeroIPTU);
+        return imovel.calcularPrecoAluguel(datainicio, datafim);
+
+    }
+
+    public double consultarAluguel(String numeroIPTU, String dataUnica) throws Exception {
+        Imovel imovel = this.obtemImovel(numeroIPTU);
+        return imovel.calcularPrecoAluguel(dataUnica);
+
+    }
+
+    public double valorDeReferencia(String numeroIPTU) throws Exception {
+        Imovel imovel = this.obtemImovel(numeroIPTU);
+        return imovel.calcularValorReferencia();
+    }
+
+    public double valorDeReferencia(String numeroIPTU, int sazonalidade) throws Exception {
+
+        Imovel imovel = this.obtemImovel(numeroIPTU);
+
+        double valorReferencia = imovel.calcularValorReferencia();
+        if(imovel instanceof UnidadeCompartilhada) {
+            UnidadeCompartilhada uc = (UnidadeCompartilhada) imovel;
+            if (uc.getQtdItensLazer() < 1) { valorReferencia = valorReferencia * 0.9;}
         }
 
-        for (Proprietario proprietario : this.proprietarios) {
-            if (proprietario.getCpf().equals(cpf)) {
-                for (Imovel imovel : proprietario.getImoveisParaLocacao()) {
-                    if (imovel.getNumeroIPTU().equals(numeroIPTU)) {
-                        if (imovel instanceof UnidadeAutonoma) {
-                            UnidadeAutonoma unidadeAutonoma = (UnidadeAutonoma) imovel;
-                            return unidadeAutonoma.calcularValorReferencia();
-                        } else if (imovel instanceof UnidadeCompartilhada) {
-                            UnidadeCompartilhada unidadeCompartilhada = (UnidadeCompartilhada) imovel;
-                            return unidadeCompartilhada.calcularValorReferencia();
-                        }
-                    }
-                }
-                System.out.println("Imóvel não encontrado para o número de IPTU fornecido");
-                return -1;
+        double indiceSazonalidade = Sazonalidade.obterValorSazonalidade(sazonalidade);
+        return valorReferencia + (valorReferencia*(indiceSazonalidade*0.01));
+
+    }
+
+    private Imovel obtemImovel(String numeroIPTU) throws NaoExistemException, NaoCadastradoException {
+        if (this.imoveis.isEmpty()) {
+            throw new NaoExistemException("Não existem imóveis cadastrados.");
+        }
+        for (Imovel imovel : this.imoveis) {
+            if (imovel.getNumeroIPTU().equals(numeroIPTU)) {
+                return imovel;
             }
         }
-        System.out.println("Proprietário não encontrado para o CPF fornecido");
-        return -1;
-    }
-
-    public double valorDeReferencia(String cpf, String numeroIPTU, int sazonalidade) {
-        int indice = Sazonalidade.obterValorSazonalidade(sazonalidade);
-        double valorReferencia = this.valorDeReferencia(cpf, numeroIPTU);
-        return  valorReferencia + (valorReferencia*(indice*0.01));
+        throw new NaoCadastradoException("Imóvel não cadastrado");
     }
 }

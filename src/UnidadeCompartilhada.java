@@ -1,6 +1,8 @@
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 
-public class UnidadeCompartilhada extends Imovel {
+public class UnidadeCompartilhada extends Imovel{
     private String identificacao;
     private Condominio condominio;
 
@@ -15,12 +17,8 @@ public class UnidadeCompartilhada extends Imovel {
     public UnidadeCompartilhada(String numeroIPTU, String rua, String cep, String tipo,
                                 String utilizacao, String numero, String identificacao,
                                 Condominio condominio, double valorIPTU, ArrayList<String> itensLazer) {
-        super(numeroIPTU, rua, cep, tipo, utilizacao, numero, valorIPTU);
-        this.identificacao = identificacao;
-        this.condominio = condominio;
-        this.condominio = new Condominio("BA", "Salvador", rua, cep, numero, itensLazer);
+        this(numeroIPTU, "BA", "Salvador",  rua, cep, tipo, utilizacao, numero, identificacao, valorIPTU, itensLazer);
     }
-
 
     public String getIdentificacao() {
         return identificacao;
@@ -48,10 +46,10 @@ public class UnidadeCompartilhada extends Imovel {
 
     @Override
     public double calcularValorReferencia() {
-        double valorReferencia = getValorIPTU() * condominio.getItensLazer().size();
+        double valorReferencia = this.getValorIPTU() * condominio.getItensLazer().size();
 
         if (condominio.getItensLazer().isEmpty()) {
-            valorReferencia *= 0.9; // Redução de 10% para unidade compartilhada sem itens de lazer
+            return this.getValorIPTU();
         }
 
         return valorReferencia;
